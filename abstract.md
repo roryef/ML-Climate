@@ -1,17 +1,8 @@
 Rory Eastland-Fruit rie2104
-Sarika de Bruyn sed2194
 
-AI-Driven Weather Forecasting for Renewable-Powered Data Centers: A Comparative Feasibility Study of Wind and Solar Regions
+Seasonal snowpack in the Colorado Rockies acts as a natural reservoir, supplying over half of the annual surface water in the western United States. However, climate change is leading to reduced accumulation and earlier snowmelt, introducing greater uncertainty into water planning. Traditional forecasting tools — statistical regressions and physics-based snow models — struggle to generalize under shifting climate patterns and are often limited by manual calibration requirements.
 
-As data centers are increasing in demand, so are their carbon emissions. Therefore, the reliance of data centers on renewable energy is essential for meeting climate targets. This paper investigates how machine learning-based weather forecasting can inform data center site selection by improving the predictability of renewable energy availability. Using historical weather data from 2024, we apply a time-series forecasting algorithm to simulate 2025 solar irradiance and wind speeds in two distinct regions—Arizona (solar-dominant) and West Virginia (wind-dominant). These forecasts are translated into expected energy output using physics-based conversion models, and then evaluated through a sensitivity analysis to assess the impact of forecast accuracy on energy supply reliability, carbon emissions from grid fallback, and return on investment.
+This project investigates the use of machine learning for near-term forecasting of snow water equivalent (SWE) and melt timing using publicly available historical data. We combine ground-based measurements from Colorado’s SNOTEL network with satellite-derived MODIS snow cover and gridded climate data from PRISM to construct a feature-rich time series. The primary objective is to build and evaluate supervised learning models, including random forests, gradient boosting, and LSTMs, that can predict SWE at a given location based on recent meteorological and snowpack conditions.
 
-We hypothesize that machine learning-based weather forecasting can significantly improve the feasibility and carbon efficiency of renewable-powered data centers by enabling more accurate predictions of wind and solar energy availability, with varying sensitivity across different geographic regions.
-
-Our method will use publicly available datasets from:
-
-1. 
-
-2. 
-
-3. 
+The project emphasizes forecast accuracy, model interpretability, and potential utility for water resource management. By comparing machine learning models against traditional baseline approaches, we aim to assess the viability of ML-driven snowpack prediction under a changing climate.
 
