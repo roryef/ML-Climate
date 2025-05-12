@@ -45,7 +45,7 @@ def plot_predictions(y_true, y_pred, model_name):
     save_path = os.path.join(FIGURE_DIR, f"{model_name.lower().replace(' ', '_')}_pred_vs_actual.png")
     plt.tight_layout()
     plt.savefig(save_path)
-    print(f"📈 Saved prediction plot to {save_path}")
+    print(f"Saved prediction plot to {save_path}")
     plt.close()
 
 
@@ -59,7 +59,7 @@ def plot_residuals(y_true, y_pred, model_name):
     save_path = os.path.join(FIGURE_DIR, f"{model_name.lower().replace(' ', '_')}_residuals.png")
     plt.tight_layout()
     plt.savefig(save_path)
-    print(f"📉 Saved residual plot to {save_path}")
+    print(f"Saved residual plot to {save_path}")
     plt.close()
 
 
@@ -77,7 +77,7 @@ def plot_feature_importance(model, feature_names, model_name):
     plt.tight_layout()
     save_path = os.path.join(FIGURE_DIR, f"{model_name.lower().replace(' ', '_')}_feature_importance.png")
     plt.savefig(save_path)
-    print(f"📊 Saved feature importance plot to {save_path}")
+    print(f"Saved feature importance plot to {save_path}")
     plt.close()
 
 
@@ -86,7 +86,7 @@ def cross_validate_model(model, X, y, label="Model"):
     neg_rmse = cross_val_score(model, X, y, scoring="neg_root_mean_squared_error", cv=kf, n_jobs=-1)
     r2 = cross_val_score(model, X, y, scoring="r2", cv=kf, n_jobs=-1)
 
-    print(f"🔄 {label} Cross-Validation (5-Fold):")
+    print(f"{label} Cross-Validation (5-Fold):")
     print(f"  RMSE: {(-neg_rmse).mean():.3f} ± {(-neg_rmse).std():.3f}")
     print(f"  R²:   {r2.mean():.3f} ± {r2.std():.3f}")
 
@@ -136,7 +136,7 @@ def train_and_evaluate_models(df):
     X_train, y_train = X_train[train_mask], y_train[train_mask]
     X_test, y_test = X_test[test_mask], y_test[test_mask]
 
-    print(f"📂 Training set: {X_train.shape}, Testing set: {X_test.shape}")
+    print(f"Training set: {X_train.shape}, Testing set: {X_test.shape}")
 
     # === Linear Regression
     lr = LinearRegression()

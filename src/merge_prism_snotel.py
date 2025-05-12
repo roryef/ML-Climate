@@ -52,4 +52,4 @@ merged_df = pd.merge(
 # Save
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 merged_df.to_csv(OUTPUT_PATH, index=False)
-print(f"✅ Merged SNOTEL + PRISM seasonal dataset saved to {OUTPUT_PATH}")
+print(f"Merged SNOTEL + PRISM seasonal dataset saved to {OUTPUT_PATH}")

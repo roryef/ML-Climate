@@ -34,4 +34,4 @@ merged_df["season"] = merged_df["month"] % 12 // 3 + 1
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 merged_df.to_csv(OUTPUT_PATH, index=False)
 
-print(f"✅ Merged SNOTEL + PRISM monthly dataset saved to {OUTPUT_PATH}")
+print(f"Merged SNOTEL + PRISM monthly dataset saved to {OUTPUT_PATH}")
