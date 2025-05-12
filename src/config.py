@@ -3,11 +3,12 @@ import os
 # === Base Directory (src/)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# === Raw Data Directories
-RAW_DATA_DIR = os.path.join(BASE_DIR, 'raw_data')
+# === Data Directories
+RAW_DATA_DIR = os.path.join(BASE_DIR, 'data')
 RAW_SNOTEL_DIR = os.path.join(RAW_DATA_DIR, 'snotel')
 RAW_PRISM_DIR = os.path.join(RAW_DATA_DIR, 'prism')
 RAW_MODIS_DIR = os.path.join(RAW_DATA_DIR, 'modis')
+FIGURE_DIR = os.path.join(BASE_DIR, 'figures')
 
 # === Target Forecast Settings
 TARGET_VARIABLE = 'swe_in'
@@ -19,7 +20,7 @@ LAG_DAYS = [1, 7, 14]
 ROLLING_WINDOWS = [3, 7]
 
 # === ML Model Parameters
-RANDOM_SEED = 42
+RANDOM_SEED = 10
 N_ESTIMATORS = 100
 MAX_DEPTH = 10
 TEST_SIZE = 0.2
