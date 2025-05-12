@@ -1,5 +1,3 @@
-# src/train_model.py
-
 import os
 import pandas as pd
 import numpy as np
@@ -9,25 +7,32 @@ import tensorflow as tf
 
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.metrics import r2_score, root_mean_squared_error
 from xgboost import XGBRegressor
 
-from config import RAW_SNOTEL_DIR, RANDOM_SEED, FIGURE_DIR
+from config import RANDOM_SEED, FIGURE_DIR
+
 
 def load_features():
-    filepath = os.path.join(RAW_SNOTEL_DIR, "snotel_features.csv")
-    return pd.read_csv(filepath, parse_dates=["date"])
+    filepath = os.path.join("src", "data", "merged", "merged_prism_snotel.csv")
+    df = pd.read_csv(filepath, parse_dates=["date"])
+    df["target_april1_swe"] = df["peak_swe_in"]
+    return df
+
 
 def train_test_split_by_year(df, test_start=2019):
     train_df = df[df["year"] < test_start]
     test_df = df[df["year"] >= test_start]
     return train_df, test_df
 
+
 def evaluate(y_true, y_pred, label=""):
     rmse = root_mean_squared_error(y_true, y_pred)
     r2 = r2_score(y_true, y_pred)
-    print(f"📊 {label} RMSE: {rmse:.3f}, R²: {r2:.3f}")
+    print(f"{label} RMSE: {rmse:.3f}, R²: {r2:.3f}")
     return rmse, r2
+
 
 def plot_predictions(y_true, y_pred, model_name):
     plt.figure(figsize=(6, 6))
@@ -43,6 +48,7 @@ def plot_predictions(y_true, y_pred, model_name):
     print(f"📈 Saved prediction plot to {save_path}")
     plt.close()
 
+
 def plot_residuals(y_true, y_pred, model_name):
     residuals = y_true - y_pred
     plt.figure(figsize=(6, 4))
@@ -56,11 +62,36 @@ def plot_residuals(y_true, y_pred, model_name):
     print(f"📉 Saved residual plot to {save_path}")
     plt.close()
 
-def prepare_lstm_data(df, feature_cols, timesteps=1):
-    """
-    Converts flat tabular data to 3D LSTM format: [samples, timesteps, features]
-    Groups by station-year.
-    """
+
+def plot_feature_importance(model, feature_names, model_name):
+    importance = model.feature_importances_
+    sorted_idx = np.argsort(importance)[::-1]
+    top_features = [feature_names[i] for i in sorted_idx]
+    top_importance = importance[sorted_idx]
+
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=top_importance[:15], y=top_features[:15])
+    plt.title(f"{model_name}: Top Feature Importances")
+    plt.xlabel("Importance")
+    plt.ylabel("Feature")
+    plt.tight_layout()
+    save_path = os.path.join(FIGURE_DIR, f"{model_name.lower().replace(' ', '_')}_feature_importance.png")
+    plt.savefig(save_path)
+    print(f"📊 Saved feature importance plot to {save_path}")
+    plt.close()
+
+
+def cross_validate_model(model, X, y, label="Model"):
+    kf = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
+    neg_rmse = cross_val_score(model, X, y, scoring="neg_root_mean_squared_error", cv=kf, n_jobs=-1)
+    r2 = cross_val_score(model, X, y, scoring="r2", cv=kf, n_jobs=-1)
+
+    print(f"🔄 {label} Cross-Validation (5-Fold):")
+    print(f"  RMSE: {(-neg_rmse).mean():.3f} ± {(-neg_rmse).std():.3f}")
+    print(f"  R²:   {r2.mean():.3f} ± {r2.std():.3f}")
+
+
+def prepare_lstm_data(df, feature_cols, timesteps):
     sequences = []
     targets = []
 
@@ -70,11 +101,12 @@ def prepare_lstm_data(df, feature_cols, timesteps=1):
         if len(group) < timesteps:
             continue
         X_seq = group[feature_cols].to_numpy()
-        y_val = group["target_april1_swe"].values[-1]  # Same target for all rows in year
+        y_val = group["target_april1_swe"].values[-1]
         sequences.append(X_seq[-timesteps:])
         targets.append(y_val)
 
     return np.stack(sequences), np.array(targets)
+
 
 def build_lstm_model(input_shape):
     model = tf.keras.Sequential([
@@ -90,14 +122,15 @@ def build_lstm_model(input_shape):
 def train_and_evaluate_models(df):
     feature_cols = [
         col for col in df.columns
-        if col.startswith("swe_in_lag") or col.startswith("temp_") or col.startswith("precip_") or "doy_" in col
+        if col not in ["station_id", "station_name", "year", "season", "date",
+                       "target_april1_swe", "peak_swe_in"]
+        and df[col].dtype in [np.float64, np.int64]
     ]
 
     train_df, test_df = train_test_split_by_year(df)
     X_train, y_train = train_df[feature_cols], train_df["target_april1_swe"]
     X_test, y_test = test_df[feature_cols], test_df["target_april1_swe"]
 
-    # Drop NaNs
     train_mask = X_train.notna().all(axis=1)
     test_mask = X_test.notna().all(axis=1)
     X_train, y_train = X_train[train_mask], y_train[train_mask]
@@ -119,6 +152,8 @@ def train_and_evaluate_models(df):
     evaluate(y_test, y_pred_rf, label="Random Forest")
     plot_predictions(y_test, y_pred_rf, "Random Forest")
     plot_residuals(y_test, y_pred_rf, "Random Forest")
+    plot_feature_importance(rf, feature_cols, "Random Forest")
+    cross_validate_model(rf, X_train, y_train, label="Random Forest")
 
     # === XGBoost
     xgb = XGBRegressor(n_estimators=100, max_depth=6, learning_rate=0.1, subsample=0.8,
@@ -128,25 +163,17 @@ def train_and_evaluate_models(df):
     evaluate(y_test, y_pred_xgb, label="XGBoost")
     plot_predictions(y_test, y_pred_xgb, "XGBoost")
     plot_residuals(y_test, y_pred_xgb, "XGBoost")
+    plot_feature_importance(xgb, feature_cols, "XGBoost")
+    cross_validate_model(xgb, X_train, y_train, label="XGBoost")
 
     # === LSTM
     print("🔁 Preparing data for LSTM...")
-
-    # Drop NaNs from input features and target
     train_df_clean = train_df.dropna(subset=feature_cols + ["target_april1_swe"])
     test_df_clean = test_df.dropna(subset=feature_cols + ["target_april1_swe"])
-
-    # Build 3D sequences
-    X_train_lstm, y_train_lstm = prepare_lstm_data(train_df_clean, feature_cols, timesteps=10)
-    X_test_lstm, y_test_lstm = prepare_lstm_data(test_df_clean, feature_cols, timesteps=10)
-
-    # Confirm no NaNs snuck through
-    assert not np.isnan(X_train_lstm).any(), "NaNs found in X_train_lstm"
-    assert not np.isnan(y_train_lstm).any(), "NaNs found in y_train_lstm"
+    X_train_lstm, y_train_lstm = prepare_lstm_data(train_df_clean, feature_cols, timesteps=12)
+    X_test_lstm, y_test_lstm = prepare_lstm_data(test_df_clean, feature_cols, timesteps=12)
 
     print(f"📐 LSTM shape: train {X_train_lstm.shape}, test {X_test_lstm.shape}")
-
-    # Build and train LSTM model
     lstm = build_lstm_model(X_train_lstm.shape[1:])
     lstm.fit(
         X_train_lstm, y_train_lstm,
@@ -157,7 +184,6 @@ def train_and_evaluate_models(df):
         verbose=1
     )
 
-    # Predict and evaluate
     y_pred_lstm = lstm.predict(X_test_lstm).flatten()
     evaluate(y_test_lstm, y_pred_lstm, label="LSTM")
     plot_predictions(y_test_lstm, y_pred_lstm, "LSTM")
@@ -166,6 +192,7 @@ def train_and_evaluate_models(df):
 
 def ensure_dirs():
     os.makedirs(FIGURE_DIR, exist_ok=True)
+
 
 if __name__ == "__main__":
     ensure_dirs()

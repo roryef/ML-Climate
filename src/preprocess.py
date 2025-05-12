@@ -4,9 +4,6 @@ from config import RAW_SNOTEL_DIR
 
 # Loads a single SNOTEL CSV
 def load_single_station_csv(filepath):
-    """
-    Loads a single SNOTEL CSV file, skips metadata, returns cleaned DataFrame.
-    """
     with open(filepath, 'r') as f:
         lines = f.readlines()
 
