@@ -8,7 +8,7 @@ OUTPUT_PATH = os.path.join("src", "data", "prism", "processed", "prism_features.
 # Load combined PRISM dataset
 df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
 
-# Drop rows with no values at all
+# Drop rows with no values
 df = df.dropna(subset=["ppt", "tmin", "tmax"], how="all")
 
 # Generate new features
@@ -41,4 +41,4 @@ agg_df = agg_df.rename(columns={
 # Save output
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 agg_df.to_csv(OUTPUT_PATH, index=False)
-print(f"✅ Engineered PRISM features saved to {OUTPUT_PATH}")
+print(f"Engineered PRISM features saved to {OUTPUT_PATH}")
