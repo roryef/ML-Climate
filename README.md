@@ -1,4 +1,4 @@
-# SWE Prediction Pipeline (src/)
+# SWE Prediction Pipeline
 
 This directory contains the full source code for a machine learning pipeline to predict April 1st Snow Water Equivalent (SWE) across Colorado using SNOTEL and PRISM climate data from 2000–2024.
 
