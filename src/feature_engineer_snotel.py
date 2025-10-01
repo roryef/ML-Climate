@@ -69,7 +69,7 @@ if __name__ == "__main__":
     final_df = generate_features()
     print(final_df.head())
 
-    # Optional: Save to file
+    # Saves to file
     output_path = os.path.join(RAW_SNOTEL_DIR, "snotel_features.csv")
     final_df.to_csv(output_path, index=False)
     print(f"Saved to {output_path}")
