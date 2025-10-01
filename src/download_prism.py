@@ -23,7 +23,7 @@ def download_prism_month(variable, year, month):
         print(f"Already downloaded: {filename}")
         return
 
-    print(f"⬇️ Downloading {filename}...")
+    print(f"Downloading {filename}...")
     try:
         response = requests.get(url, timeout=30)
         if response.status_code == 200:
